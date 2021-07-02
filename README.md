@@ -1,4 +1,27 @@
-### Hi there 👋
+Hello I'm Sean !
+-------------------------------------------------------------------------------------
+-Before
+
+System Operation & Security Manager
+
+-Now
+
+H4CKER 💻 & Security Consultant 
+
+------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 <!--
 **seanjungkm/seanjungkm** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
