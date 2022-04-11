@@ -1,0 +1,4 @@
+signapk 
+
+
+java -jar SignApK.jar testkey.509.pem testkey.pk8 원본.apk 사인생성.apk

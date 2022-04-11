@@ -1,0 +1,114 @@
+1. 디컴파일 
+apktool -d apk 파일 >> 디컴파일된 스말리 코드 (코드변조시 여기서) 
+
+2. 소스보기
+apk 파일 zip파일로 변환 또는 apk 파일 압축 미리보기 후 classes.dex 빼기
+dex2jar 사용하여 변환
+jd-gui 로 보기 (class 파일이며, save as all 로 일부 앱들은 java 파일로 저장할 수 있음
+
+3. 리패키징
+보통 디컴파일 후 스말리 코드를 변조한다음 아래 명령어를 통하여 앱 리패키징을 할 수 있음.
+apktool b 경로 -o 새이름.apk
+
+4.서명 순서
+앱들은 서명이 들어가야지 설치 또는 실행이 가능함.
+
+키 서명 생성
+keytool -genkey -v -keystore my-release-key.keystore -alias alias_name -keyalg RSA -keysize 2048
+password testtest
+
+생성한 키를 apk파일에 서명
+jarsigner -verbose -sigalg SHA1withRSA -digestalg SHA1 -keystore my-release-key.keystore test.apk alias_name
+
+
+5. 루팅우회
+루팅우회에는 여러가지 방안이 존재하나 크게 frida로 함수 후킹 또는 smali 코드 변조가 있음.
+
+smali인 경우 jd-gui로 변환한 jar파일 열고 루팅체크부분 찾기 >> 디컴파일한 스말리 코드를 변조하여 리팩후 서명 후 실행
+
+(심화 내용)
+frida 인 경우 nox adb shell 후 /data/local/tmp/ 에 밀어넣은 frida server 실행 
+후킹하고자 하는 pm list packages 에서 패키지 이름 조회 >> 후킹용 파일에 패키지 이름 삽입
+후킹용 파일에 jscode(인터넷에 검색 시 많음) 루팅체크 함수 확인 후 분기문 변조
+
+
+6. 무결성 검증
+위 스말리코드 변조를 통하여 루팅우회 변조 시 무결성 체크하면 확인가능
+또는 단순하게 MainActivity또는 메인 OnCreate 함수에 확인용 코드를 삽입할 수 있으나, 루팅 우회구문 삽입만으로도 충분
+
+7. SSL Pinning
+
+8. 서명 받기
+keystore -list -v -keystore jks경로
+
+9 메모리 덤프 
+am dumpheap pid .hprof경로 
+strings64.exe .hprof > .txt
+
+
+10. 디버깅 로직
+sysctl - attach 가능 하나 디버깅 불가
+#우회 로직
+Interceptor.attach(Module.findExportByName(null, 'sysctl'), {
+	onEnter: function(args) {
+		// console.warn('\t[*] sysctl called !');
+		this.kp_proc = args[2];
+		this.count = args[1];
+	},
+	onLeave: function(retval) {
+		if(retval == 0x0) {
+			if(this.count.toInt32() == 4) {
+				var p_flag = Memory.readInt(this.kp_proc.add(32));
+					// console.log(Memory.readByteArray(this.kp_proc.add(32), 2));
+					if((p_flag & 0x800) !== 0) {
+						console.log('\x1b[34m[!] Anti Debugging Bypass ! (sysctl)\x1b[0m');
+						Memory.writeByteArray(this.kp_proc.add(32), [0x00, 0x00]);
+					}
+			}
+		}
+	}
+});
+
+#dlsym + prtarce - 인자변조
+Interceptor.attach(Module.findExportByName(null, 'ptrace'), {
+	onEnter: function(args) {
+		// console.warn('\t[*] ptrace called !');
+		if(args[0].toInt32() == 31) {
+			console.log('\x1b[34m[!] Anti Debugging Bypass !(ptrace)\x1b[0m');
+			args[0] = ptr(0x0);
+		}
+	}
+});
+
+#SVC - 모듈 스캔 후 HEX값 매핑 및 메모리 오버로드
+var m = Process.findModuleByName('ModuleName');
+// console.log(JSON.stringify(m));
+var pattern = '50 03 80 D2 01 10 00 D4';
+// Memory.scanSync(m.base, m.size, pattern);
+Memory.scan(m.base, m.size, pattern, {
+	onMatch: function(address, size) {
+		// console.log('Memory.scan() found match at ' + address + ' with size ' + size);
+		console.log('\x1b[34m[!] Anti Debugging Bypass ! (SVC ptrace)\x1b[0m');
+		console.log(Memory.readByteArray(address, size));
+		Memory.protect(address, size, 'rwx');
+		Memory.writeByteArray(address.add(4), [0x1F, 0x20, 0x03, 0xD5]);
+		console.warn(Memory.readByteArray(address, size));
+	},
+	onComplete: function () {
+		console.log('Memory.scan() complete');
+	}
+})
+
+#SVC 스크립트 안먹을떄
+var pattern = 'E0 03 80 D2 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 50 03 80 D2 01 10 00 D4';
+...
+Memory.scan(m.base, m.size, pattern, {
+	onMatch: function(address, size) {
+		...
+		Memory.writeByteArray(address, [0x00, 0x00]);
+		...
+	},
+	onComplete: function () {
+		...
+	}
+})

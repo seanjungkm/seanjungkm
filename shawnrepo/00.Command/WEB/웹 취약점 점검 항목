@@ -1,0 +1,71 @@
+웹 취약점 점검 항목
+
+BOF
+- Smuggling
+
+포맷 스트링
+- 프로그램 다운
+- 프로세스 스택확인
+- 메모리 임의 위치보기
+
+LDAP 인젝션
+-로그인 임의 인증
+
+운영체제 명령 실행 (command injection)
+
+SQL Injection
+
+SSI Injection (Server side Includes)
+- 입력파라미터로 서버에 주석처리후 정보요청
+
+Xpath Injection
+- XML DB Xpath SQL
+
+Directory Indexing
+
+정보누출
+- 버전정보
+- 부적절한 에러처리
+
+악성콘텐츠
+-AllowScriptAccess=always일 경우 악성스크립트 삽입 가능
+
+XXS
+
+약한 문자열 강도
+- 특수문자 사용여부, 길이
+
+불충분한 인증 
+
+취약한 패스워드 복구
+
+CSRF
+
+세션예측? 
+
+불충분한 인가
+
+불충분한 세션만료
+
+세션고정
+
+자동화공격
+
+프로세스 검증누락
+-우회
+
+업로드
+다운로드
+
+관리자페이지
+
+경로추적
+
+위치공개
+- 디렉터리 경로
+- 불필요한 파일, 샘플 페이지
+
+데이터 평문전송
+-암호화 통신
+- 
+쿠키변조

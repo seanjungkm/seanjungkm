@@ -1,0 +1,69 @@
+nginx  경로
+
+/etc/nignx
+
+/usr/share/nginx/html
+
+완료후 service nginx reload;
+restart 도 가능하나 비추
+
+
+
+
+drwxr-xr-x 2 root root   26 Jun  6 10:16 conf.d   # nginx.conf 에서 불러들일수 있는 파일 저장
+-rw-r--r-- 1 root root 1007 Apr 22 00:07 fastcgi_params # 요청이 FastCGI에 전달되게 환경을 설정한다. 
+									#모든 FastCGI에 대해 두개의 매개변수 SCRIPT_FILENAME과 QUERY_STRING이 반드시 필요하다.
+									#엔진엑스 환경설정 폴더에 있는 fastcgi_params파일은 필요한 모든 매개변수 정의를 이미 포함하고 있다. 
+									#단, 각 FastCGI환경설저에 대해 따로 지정해야 하는 SCRIPT_FILENAME매개변수만 제외돼 있다.
+									#구문: fastcgi_param PARAM value;
+									#https://m.blog.naver.com/PostView.nhn?blogId=dudwo567890&logNo=130169637747&proxyReferer=https:%2F%2Fwww.google.com%2F
+
+-rw-r--r-- 1 root root 2837 Apr 22 00:07 koi-utf
+-rw-r--r-- 1 root root 2223 Apr 22 00:07 koi-win
+-rw-r--r-- 1 root root 5231 Apr 22 00:07 mime.types
+lrwxrwxrwx 1 root root   29 Jun  6 10:15 modules -> ../../usr/lib64/nginx/modules
+-rw-r--r-- 1 root root  643 Apr 22 00:05 nginx.conf
+-rw-r--r-- 1 root root  636 Apr 22 00:07 scgi_params
+-rw-r--r-- 1 root root  664 Apr 22 00:07 uwsgi_params
+-rw-r--r-- 1 root root 3610 Apr 22 00:07 win-utf
+
+
+
+
+
+//nginx.conf
+
+user  nginx; 
+worker_processes  1; #동작 수
+
+error_log  /var/log/nginx/error.log warn;   #에러로그 경로
+pid        /var/run/nginx.pid; #pid 경로
+
+
+events {
+    worker_connections  1024; #접속자수
+}
+
+
+http {
+    include       /etc/nginx/mime.types; #블록값
+    default_type  application/octet-stream;
+
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+
+    access_log  /var/log/nginx/access.log  main; #access log 저장 위치
+
+    sendfile        on;
+    #tcp_nopush     on;
+
+    keepalive_timeout  65;
+
+    #gzip  on;
+
+    include /etc/nginx/conf.d/*.conf;
+}
+
+
+

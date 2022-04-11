@@ -1,0 +1,41 @@
+HTTP/2 H2C Smuggling 정리
+
+GET / HTTP/1.1
+Host: test.example.com
+Connection: Upgrade, HTTP2-Settings
+Upgrade: h2c
+
+
+요청값을 날릴경우
+
+HTTP/2 를 지원하지 않는 서버일 경우는 무시함
+
+만약 지원하는 경우 
+
+HTTP/1.1 101 Switching Protocols
+Connection: Upgrade
+Upgrade: h2c
+[ HTTP/2 connection ...
+
+결과가 나옴
+
+HTTP/2 통신은 7계층 기준으로 수행되는 프로토콜이며 TCP Connection 사용
+101 Swithing protocol 사용하며 uri는 80, 443 동일
+
+
+Upgrade에 h2c는 HTTP/2를 평문 통신하겠다는 의미
+
+프로토콜에 대한 합의는 TLS-ALPN(어플리케이션 레이어 프로토콜 협의) 사용함 (https는 h2)
+
+결론 환경이 리버스 프록시인 경우 cleartect가 아닌 TLS 상에서 proxy가 h2c를 백엔드에 전달
+-> TLS connection 위에 TCP Tunnel생성 새로운 커넥션이 아닌 기존 커넥션을 사용하게됨
+즉, HTTP 통신이 아니며 이미 연결되어있는 터널을 사용하게 되므로 ACL 정책에 대해 영향받지 않으며 차단된 리소스에 접근가능
+
+정리 
+
+1. 클라이언트가 서버(프록시)로 HTTP/1.1 Upgrade 요청 전송 (잘못된 헤더를 전송)
+2. 프록시가 해당 요청을 백엔드에 전달하고 101 Swiching protocol로 response를 내려줌
+3. 백엔드 서버에서 101을 받으면 TCP Tunnel을 생성함
+4. 클라이언트가 프록시로부터 101을 받으면 기존 커넥션을 재사용하고, HTTP/2 초기화를 진행
+5. 클라이언트가 HTTP/2 multiplexing을 사용하여 priavte한 경로에 대해 추가 요청을 전송함
+6. 프록시는 TCP 통신을 감시하지 않기 때문에(정책상 HTTP) 제한된 페이지에 추가 요청을 전송하고, 서버는 응답을 TLS Tunnel로 전달함

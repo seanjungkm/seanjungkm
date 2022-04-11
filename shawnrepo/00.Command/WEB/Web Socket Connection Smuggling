@@ -1,0 +1,7 @@
+Web Socket Connection Smuggling
+
+
+1. Client가 Front 서버에 HTTP Upgrade Request를 요청함
+2. 프론트 단이 백엔드로 업그레이드 요청함
+3. HTTP 101 Response -> TLS connection이 발생하여 기존 TCP Tunnel 사용하며 통신이 맺어지게 됨.
+ 

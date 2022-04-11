@@ -1,0 +1,23 @@
+공격 페이로드
+
+기본적인 공격 페이로이며
+${jndi:
+{{jndi:
+
+해당 내용을 다음과 같이 인코딩하여 전달 가능
+
+예)url encode
+%24%7Bjndi%3A%0A
+%7B%7Bjndi%3A%0A
+
+예) base64
+SlRkQ2FtNWthU1V6UVNVd1FRPT0=
+SlRkQ0pUZENhbTVrYVNVelFTVXdRUT09
+
+해당 ${jndi:${ldap:${lower: 형식으로 응용 가능함
+
+공격포인트는 Request 헤더 및 파라미터에서 검증이 이뤄지지 않는 경우 취약점이 이루어질 수 있음.
+
+영향도는 
+서버내 패스워드 없이 권한 상승적인 면도 있어 매우 치명적
+

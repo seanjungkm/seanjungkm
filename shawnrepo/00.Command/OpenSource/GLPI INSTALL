@@ -1,0 +1,82 @@
+//Maria DB install
+
+cat <<EOF | sudo tee /etc/yum.repos.d/MariaDB.repo
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.4/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+
+sudo yum makecache fast
+
+sudo yum -y install MariaDB-server MariaDB-client
+
+rpm -qi MariaDB-server
+
+sudo systemctl enable --now mariadb
+
+sudo mysql_secure_installation 
+
+
+//mariadb Create Table
+
+mysql -u root -p
+
+CREATE USER 'glpi'@'%' IDENTIFIED BY 'glpiDBSecret';
+GRANT USAGE ON *.* TO 'glpi'@'%' IDENTIFIED BY 'glpiDBSecret';
+CREATE DATABASE IF NOT EXISTS `glpi` ;
+GRANT ALL PRIVILEGES ON `glpi`.* TO 'glpi'@'%';
+FLUSH PRIVILEGES;
+EXIT
+
+//계정 확인 
+
+mysql -uglpi -pglpiDBSecret glpi 
+
+
+//yum install
+
+sudo yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+sudo yum -y install http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+sudo yum -y install yum-utils
+
+
+sudo yum-config-manager --enable remi-php73
+sudo yum-config-manager --enable remi
+sudo yum-config-manager --enable remi-glpi94
+
+sudo yum -y install httpd php php-opcache php-apcu glpi
+
+
+// 서비스 시작
+
+sudo systemctl enable --now httpd
+
+//방화벽 예외처리 
+sudo firewall-cmd --zone=public --add-service=http --permanent
+ sudo firewall-cmd --reload
+ 
+//SeLinux 예외처리
+
+sudo setsebool -P httpd_can_network_connect on
+sudo setsebool -P httpd_can_network_connect_db on
+sudo setsebool -P httpd_can_sendmail on
+
+//config 파일 수정
+
+sudo vi /etc/httpd/conf.d/glpi.conf
+
+Add your IP on line 29, . This examples adds my IP address 192.168.10.11, replace with yours.
+
+http://ServerIP_or_Hostname/glpi/
+
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////
+
+
+

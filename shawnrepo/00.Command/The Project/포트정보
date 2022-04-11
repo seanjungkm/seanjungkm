@@ -1,0 +1,10 @@
+포트정보
+
+apache localhost:80,443
+tomcat localhost:8080
+mysql localhost:3306
+jenkins localhost:9999
+dvwa localhost:80 (apache)
+nexus localhost:
+fiddler localhost:8080 (proxy)
+

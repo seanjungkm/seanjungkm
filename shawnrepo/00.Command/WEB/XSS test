@@ -1,0 +1,35 @@
+Reflect XSS test
+
+ex1)
+https://insecure-website.com/status?message=<script>/*+Bad+stuff+here...+*/</script>
+
+ex2)
+<p>Status: <script>/* Bad stuff here... */</script></p>
+
+
+
+Stored XSS test
+
+ex)
+<p><script>/* Bad stuff here... */</script></p>
+
+
+
+Dom-based XXS test
+
+ex)
+
+
+request
+
+var search = document.getElementById('search').value;
+var results = document.getElementById('results');
+results.innerHTML = 'You searched for: ' + search;
+
+
+
+and then, control the value of the input field
+
+You searched for: <img src=1 onerror='/* Bad stuff here... */'>
+
+ㄴlike this

