@@ -9,7 +9,7 @@ Before
 
 Now
 
-- H4CKER 💻 & Security Consultant 
+- H4CKER 💻 & Security Research Consultant 
 
 ------------------
 
