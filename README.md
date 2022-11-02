@@ -11,6 +11,20 @@ Now
 
 - H4CKER 💻 & Security Research Consultant 
 
+Skills
+- WEB 
+- Mobile
+- Infra
+- Source Code
+- ISMS-P
+- Management & Physical
+
+Weapons
+- Fiddler
+- Burp
+- ZAP
+- Frida
+- Kali
 ------------------
 
 
