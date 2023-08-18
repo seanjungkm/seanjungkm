@@ -9,22 +9,16 @@ Before
 
 Now
 
-- H4CKER 💻 & Security Research Consultant 
+- H4CKER 💻 & Security Research Consultant & WhiteHacker Team
 
 Skills
+- Pentest
+- Management & Physical
+- ISMS-P
 - WEB 
 - Mobile
-- Infra
 - Source Code
-- ISMS-P
-- Management & Physical
-
-Weapons
-- Fiddler
-- Burp
-- ZAP
-- Frida
-- Kali
+- Infra
 ------------------
 
 
