@@ -9,7 +9,7 @@ Before
 
 Now
 
-- H4CKER 💻 & Security Research Consultant & WhiteHacker Team
+- H4CKER 💻 & Security Research Consultant
 
 Skills
 - Pentest
