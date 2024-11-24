@@ -1,6 +1,3 @@
-![46708794-43C2-4F5A-8BE6-66D5CEBF0037](https://user-images.githubusercontent.com/63111096/161552534-3a267716-adba-488d-bc0d-6c3450c8e662.jpeg)
-
-
 Hello I'm Sean !
 -------------------------------------------------------------------------------------
 Before
@@ -9,11 +6,11 @@ Before
 
 Now
 
-- H4CKER 💻 & Security Research Consultant
+- H4CKER & Penetration Tester
 
 Skills
-- Pentest
-- Management & Physical
+- Penetration Test
+- Management & Physical Security
 - ISMS-P
 - WEB 
 - Mobile
