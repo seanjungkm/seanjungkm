@@ -19,6 +19,8 @@ Skills
 ------------------
 
 
+#If you would like to see my history, please request permission
+
 
 <!--
 **seanjungkm/seanjungkm** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
