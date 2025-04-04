@@ -12,7 +12,6 @@ Skills
 - Penetration Test
 - Management & Physical Security
 - ISMS
-- PCI-DSS
 - WEB 
 - Mobile
 - Source Code
