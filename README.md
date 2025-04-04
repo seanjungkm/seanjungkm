@@ -11,11 +11,12 @@ Now
 Skills
 - Penetration Test
 - Management & Physical Security
-- ISMS-P
+- ISMS
 - WEB 
 - Mobile
 - Source Code
 - Infra
+- Personal information
 ------------------
 
 
